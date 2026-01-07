@@ -10,7 +10,8 @@
 - client_usage_example.js (可选，客户端调用示例)
 
 使用：
-通过http发送post如下格式：{
+启动代码后通过向http://192.168.3.2:3000/sign发送post如下格式：
+{
     "ak": "您的AccessKey",
     "sk": "您的SecretKey",
     "securityToken": "您的SessionToken", // 可选
@@ -21,7 +22,9 @@
         "prompt": "一只可爱的猫咪...",
         "scale": 0.5
     }
-}会返回{
+}
+会返回
+{
     "Host": "visual.volcengineapi.com",
     "X-Date": "20260106T150252Z",
     "X-Content-Sha256": "63e02c401caf6dacdcf3a0bc4df67c1b05831718b669435102804905b6d9848a",
