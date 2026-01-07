@@ -1,6 +1,15 @@
 ### 1. 迁移文件
 您只需要拷贝项目中的核心代码文件， 不需要 拷贝 node_modules 文件夹（它体积很大且需要在新环境中重新安装）。
 
+需要拷贝的文件/文件夹：
+
+- index.js (服务入口)
+- signer.js (签名核心逻辑)
+- package.json (项目配置与依赖列表)
+- public/ (文件夹，包含诊断页面)
+- client_usage_example.js (可选，客户端调用示例)
+
+使用：
 通过http发送post如下格式：{
     "ak": "您的AccessKey",
     "sk": "您的SecretKey",
@@ -22,13 +31,7 @@
     "url": "https://visual.volcengineapi.com/?Action=CVSync2AsyncSubmitTask&Version=2022-08-31"
 }
 这些必要信息，然后构建http请求就可以正确使用火山引擎api
-需要拷贝的文件/文件夹：
 
-- index.js (服务入口)
-- signer.js (签名核心逻辑)
-- package.json (项目配置与依赖列表)
-- public/ (文件夹，包含诊断页面)
-- client_usage_example.js (可选，客户端调用示例)
 ### 2. 在新电脑上安装环境
 1. 安装 Node.js ：确保新电脑上安装了 Node.js（建议版本 v14 以上）。
 2. 安装依赖 ：
