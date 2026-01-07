@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>即梦AI签名诊断工具</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        textarea { height: 100px; font-family: monospace; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; }
+        #log { margin-top: 20px; background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; height: 400px; overflow-y: auto; }
+        .log-info { color: #569cd6; }
+        .log-success { color: #6a9955; }
+        .log-error { color: #f44747; }
+        .log-detail { color: #9cdcfe; font-size: 0.9em; margin-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>即梦AI 签名链路诊断</h1>
+        
+        <div class="form-group">
+            <label>Access Key (AK)</label>
+            <input type="text" id="ak" placeholder="AK..." value="">
+        </div>
+        <div class="form-group">
+            <label>Secret Key (SK)</label>
+            <input type="password" id="sk" placeholder="SK..." value="">
+        </div>
+        <div class="form-group">
+            <label>Security Token (可选 - STS)</label>
+            <input type="text" id="securityToken" placeholder="STS Token...">
+        </div>
+        
+        <div class="form-group">
+            <label>Action</label>
+            <input type="text" id="action" value="CVSync2AsyncSubmitTask" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Request Body (JSON)</label>
+            <textarea id="body">
+{
+  "req_key": "jimeng_t2i_v40",
+  "prompt": "一只可爱的卡通小猫",
+  "force_single": true
+}
+            </textarea>
+        </div>
+
+        <button onclick="startDiagnosis()" id="btn">开始诊断</button>
+
+        <div id="log">等待开始...</div>
+    </div>
+
+    <script>
+        const logEl = document.getElementById('log');
+        const btn = document.getElementById('btn');
+
+        function appendLog(msg, type = 'normal', detail = null) {
+            const time = new Date().toLocaleTimeString();
+            let html = `<div class="log-${type}">[${time}] ${msg}</div>`;
+            if (detail) {
+                const detailStr = typeof detail === 'string' ? detail : JSON.stringify(detail, null, 2);
+                html += `<div class="log-detail">${detailStr}</div>`;
+            }
+            logEl.innerHTML += html;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        async function startDiagnosis() {
+            const ak = document.getElementById('ak').value.trim();
+            const sk = document.getElementById('sk').value.trim();
+            const securityToken = document.getElementById('securityToken').value.trim();
+            const bodyStr = document.getElementById('body').value.trim();
+
+            if (!ak || !sk) {
+                alert('请输入 AK 和 SK');
+                return;
+            }
+
+            let body;
+            try {
+                body = JSON.parse(bodyStr);
+            } catch (e) {
+                alert('Body 必须是合法的 JSON');
+                return;
+            }
+
+            logEl.innerHTML = '';
+            btn.disabled = true;
+            appendLog('🚀 开始诊断流程...');
+            appendLog('📡 正在请求服务端进行代理调用...');
+
+            try {
+                const res = await fetch('/debug-invoke', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ak, sk, securityToken,
+                        body,
+                        action: 'CVSync2AsyncSubmitTask',
+                        version: '2022-08-31'
+                    })
+                });
+
+                const data = await res.json();
+                
+                if (data.steps) {
+                    data.steps.forEach(step => {
+                        appendLog(step.message, step.type, step.detail);
+                    });
+                }
+
+                if (data.success) {
+                    appendLog('✅ 诊断成功！签名通过，API调用成功。', 'success');
+                } else {
+                    appendLog('❌ 诊断失败。请检查日志详情。', 'error');
+                }
+
+            } catch (err) {
+                appendLog(`请求失败: ${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
